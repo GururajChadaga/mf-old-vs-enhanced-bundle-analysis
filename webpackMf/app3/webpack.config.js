@@ -36,10 +36,6 @@ module.exports = {
       exposes: {
         "./Widget": "./src/Widget",
       },
-      // adds react as shared module
-      // version is inferred from package.json
-      // there is no version check for the required version
-      // so it will always use the higher version found
       shared: {
         react: {
           requiredVersion: deps.react,
@@ -52,16 +48,14 @@ module.exports = {
           requiredVersion: deps["react-dom"],
           singleton: true, // only a single version of the shared module is allowed
         },
-        // adds moment as shared module
-        // version is inferred from package.json
-        // it will use the highest moment version that is >= 2.24 and < 3
         moment: deps.moment,
         lodash: {
           requiredVersion: deps.lodash,
           singleton: false,
         },
-
-
+        "chart.js": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({
@@ -81,14 +75,14 @@ module.exports = {
     static: {
       directory: path.join(__dirname, "dist"),
     },
-    compress: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
       "Access-Control-Allow-Headers":
         "X-Requested-With, content-type, Authorization",
     },
-    port: 3003, // Specific port for App3
+    compress: true,
+    port: 3003,
     open: false,
     historyApiFallback: true,
   },

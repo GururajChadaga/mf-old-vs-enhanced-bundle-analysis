@@ -50,10 +50,17 @@ module.exports = {
         "react-dom": {
           singleton: true, // only a single version of the shared module is allowed
         },
-        // lodash: {
-        //   requiredVersion: deps.lodash,
-        //   singleton: true,
-        // },
+        lodash: {
+          requiredVersion: deps.lodash,
+          singleton: true,
+        },
+        moment: {
+          requiredVersion: deps.moment,
+          singleton: true,
+        },
+        "chart.js": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({

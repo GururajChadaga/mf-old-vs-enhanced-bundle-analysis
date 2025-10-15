@@ -53,6 +53,9 @@ module.exports = {
           requiredVersion: deps.lodash,
           singleton: false,
         },
+        "chart.js": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({

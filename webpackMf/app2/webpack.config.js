@@ -53,8 +53,9 @@ module.exports = {
           requiredVersion: deps.lodash,
           singleton: false,
         },
-
-
+        "chart.js": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({
@@ -74,14 +75,14 @@ module.exports = {
     static: {
       directory: path.join(__dirname, "dist"),
     },
-    compress: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
       "Access-Control-Allow-Headers":
         "X-Requested-With, content-type, Authorization",
     },
-    port: 3002, // Specific port for App2
+    compress: true,
+    port: 3002,
     open: false,
     historyApiFallback: true,
   },
