@@ -1,6 +1,7 @@
 import React, { useState, Suspense, useEffect, useRef } from "react";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
+import * as THREE from "three";
 
 Chart.register(...registerables);
 
@@ -18,6 +19,8 @@ function App() {
   const [activeComponent, setActiveComponent] = useState(null);
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const threeRef = useRef(null);
+  const threeScene = useRef(null);
 
   const setApp2 = () => {
     setActiveComponent("app2");
@@ -66,7 +69,44 @@ function App() {
     };
   }, []);
 
+  // Three.js scene setup
+  useEffect(() => {
+    if (threeRef.current) {
+      // Create scene, camera, renderer
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 400 / 200, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas: threeRef.current });
+      renderer.setSize(400, 200);
+
+      // Create a rotating cube
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+
+      camera.position.z = 5;
+
+      // Animation loop
+      const animate = () => {
+        requestAnimationFrame(animate);
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      threeScene.current = { scene, camera, renderer, cube };
+    }
+
+    return () => {
+      if (threeScene.current) {
+        threeScene.current.renderer.dispose();
+      }
+    };
+  }, []);
+
   console.log("Chart.js version:", Chart.version);
+  console.log("Three.js version:", THREE.REVISION);
 
 
 
@@ -88,6 +128,11 @@ function App() {
       <div style={{ marginBottom: "2em" }}>
         <h3>Chart.js Demo (Shared Library)</h3>
         <canvas ref={chartRef} style={{ maxWidth: "400px", maxHeight: "200px" }}></canvas>
+      </div>
+
+      <div style={{ marginBottom: "2em" }}>
+        <h3>Three.js Demo (Shared Library)</h3>
+        <canvas ref={threeRef} style={{ border: "1px solid #ccc" }}></canvas>
       </div>
 
       <button onClick={setApp2}>Load App 2 Widget</button>

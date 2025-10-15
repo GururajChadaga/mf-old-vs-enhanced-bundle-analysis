@@ -57,6 +57,9 @@ module.exports = {
         "chart.js": {
           singleton: true,
         },
+        "three": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({

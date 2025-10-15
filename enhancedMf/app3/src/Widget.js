@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import moment from "moment";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
+import * as THREE from "three";
 
 Chart.register(...registerables);
 
@@ -9,10 +10,13 @@ Chart.register(...registerables);
 export default function Widget() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const threeRef = useRef(null);
+  const threeScene = useRef(null);
 
   console.log("app3 widget sharescope", __webpack_share_scopes__);
   console.log("app3 lodash version:", _.VERSION);
   console.log("app3 Chart.js version:", Chart.version);
+  console.log("app3 Three.js version:", THREE.REVISION);
 
   // Using different lodash functions in app3 widget
   const fruits = ["apple", "banana", "cherry", "date", "elderberry"];
@@ -74,7 +78,39 @@ export default function Widget() {
     };
   }, [fruits]);
 
+  // Three.js scene setup
+  useEffect(() => {
+    if (threeRef.current) {
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 250 / 250, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas: threeRef.current });
+      renderer.setSize(250, 250);
 
+      // Create a spinning torus
+      const geometry = new THREE.TorusGeometry(1, 0.3, 16, 100);
+      const material = new THREE.MeshBasicMaterial({ color: 0x9932cc, wireframe: true });
+      const torus = new THREE.Mesh(geometry, material);
+      scene.add(torus);
+
+      camera.position.z = 4;
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        torus.rotation.x += 0.01;
+        torus.rotation.y += 0.01;
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      threeScene.current = { scene, camera, renderer, torus };
+    }
+
+    return () => {
+      if (threeScene.current) {
+        threeScene.current.renderer.dispose();
+      }
+    };
+  }, []);
 
   return (
     <div
@@ -105,6 +141,10 @@ export default function Widget() {
         <div style={{ marginTop: "1em" }}>
           <p><strong>Chart.js Demo:</strong></p>
           <canvas ref={chartRef} style={{ maxWidth: "250px", maxHeight: "250px" }}></canvas>
+        </div>
+        <div style={{ marginTop: "1em" }}>
+          <p><strong>Three.js Demo:</strong></p>
+          <canvas ref={threeRef} style={{ border: "1px solid white" }}></canvas>
         </div>
 
 

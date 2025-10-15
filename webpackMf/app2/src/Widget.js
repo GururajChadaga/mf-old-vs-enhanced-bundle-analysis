@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import moment from "moment";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
+import * as THREE from "three";
 
 Chart.register(...registerables);
 
@@ -9,10 +10,13 @@ Chart.register(...registerables);
 export default function Widget() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const threeRef = useRef(null);
+  const threeScene = useRef(null);
 
   console.log("app2 widget sharescope", __webpack_share_scopes__);
   console.log("app2 lodash version:", _.VERSION);
   console.log("app2 Chart.js version:", Chart.version);
+  console.log("app2 Three.js version:", THREE.REVISION);
 
   // Using lodash functions in the widget
   const sampleData = [10, 20, 30, 40, 50];
@@ -65,7 +69,39 @@ export default function Widget() {
     };
   }, [sampleData, shuffledData]);
 
+  // Three.js scene setup
+  useEffect(() => {
+    if (threeRef.current) {
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 300 / 150, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas: threeRef.current });
+      renderer.setSize(300, 150);
 
+      // Create a spinning sphere
+      const geometry = new THREE.SphereGeometry();
+      const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+      const sphere = new THREE.Mesh(geometry, material);
+      scene.add(sphere);
+
+      camera.position.z = 3;
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        sphere.rotation.x += 0.02;
+        sphere.rotation.y += 0.02;
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      threeScene.current = { scene, camera, renderer, sphere };
+    }
+
+    return () => {
+      if (threeScene.current) {
+        threeScene.current.renderer.dispose();
+      }
+    };
+  }, []);
 
   return (
     <div
@@ -95,6 +131,10 @@ export default function Widget() {
         <div style={{ marginTop: "1em" }}>
           <p><strong>Chart.js Demo:</strong></p>
           <canvas ref={chartRef} style={{ maxWidth: "300px", maxHeight: "150px" }}></canvas>
+        </div>
+        <div style={{ marginTop: "1em" }}>
+          <p><strong>Three.js Demo:</strong></p>
+          <canvas ref={threeRef} style={{ border: "1px solid white" }}></canvas>
         </div>
 
 
