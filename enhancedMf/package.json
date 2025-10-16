@@ -9,7 +9,8 @@
     "cleandist": "rm -rf app*/dist hostbuildtime/dist",
     "cleanmodules": "rm -rf app*/node_modules hostbuildtime/node_modules node_modules",
     "cleanall": "npm run cleandist && npm run cleanmodules",
-    "cleanstart": "npm run cleandist && npm start"
+    "cleanstart": "npm run cleandist && npm start",
+    "cleanbuild": "npm run cleandist && npm run build"
   },
   "keywords": [],
   "author": "",

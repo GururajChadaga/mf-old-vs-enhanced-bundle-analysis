@@ -77,7 +77,7 @@ module.exports = {
     }),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
-      reportFilename: 'app3-bundle-report.html',
+      reportFilename: 'enhancedmf-app3-bundle-report.html',
       openAnalyzer: false
     }),
   ],
