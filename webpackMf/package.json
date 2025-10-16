@@ -27,6 +27,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.3",
     "chart.js": "^4.5.1",
+    "react-router-dom": "^7.9.4",
     "three": "^0.180.0"
   }
 }

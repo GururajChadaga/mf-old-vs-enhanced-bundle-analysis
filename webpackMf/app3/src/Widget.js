@@ -3,10 +3,12 @@ import moment from "moment";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
 import * as THREE from "three";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 Chart.register(...registerables);
 
+// Create a client for standalone usage
+const queryClient = new QueryClient();
 
 // Mock API for widget data
 const fetchWidgetData = async () => {
@@ -22,7 +24,7 @@ const fetchWidgetData = async () => {
   };
 };
 
-export default function Widget() {
+function Widget() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const threeRef = useRef(null);
@@ -201,5 +203,14 @@ export default function Widget() {
 
       </div>
     </div>
+  );
+}
+
+// Wrap Widget with QueryClientProvider for standalone usage
+export default function WidgetWithQuery() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Widget />
+    </QueryClientProvider>
   );
 }

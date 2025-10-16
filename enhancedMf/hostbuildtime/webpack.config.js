@@ -63,6 +63,9 @@ module.exports = {
         "@tanstack/react-query": {
           singleton: true,
         },
+        "react-router-dom": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({

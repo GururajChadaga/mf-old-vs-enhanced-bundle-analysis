@@ -1,4 +1,5 @@
 import React, { useState, Suspense, useEffect, useRef } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
 import * as THREE from "three";
@@ -30,8 +31,51 @@ const fetchAppStats = async () => {
   };
 };
 
-function App() {
-  const [activeComponent, setActiveComponent] = useState(null);
+// Navigation component to show current route
+function Navigation() {
+  const location = useLocation();
+
+  return (
+    <nav style={{
+      padding: "1em",
+      backgroundColor: "#f0f0f0",
+      marginBottom: "1em",
+      borderRadius: "4px"
+    }}>
+      <div style={{ marginBottom: "0.5em" }}>
+        <strong>React Router Demo (Shared Library)</strong>
+      </div>
+      <div style={{ display: "flex", gap: "1em", marginBottom: "0.5em" }}>
+        <Link to="/" style={{ textDecoration: location.pathname === "/" ? "underline" : "none" }}>
+          Home
+        </Link>
+        <Link to="/demos" style={{ textDecoration: location.pathname === "/demos" ? "underline" : "none" }}>
+          Demos
+        </Link>
+        <Link to="/remotes" style={{ textDecoration: location.pathname === "/remotes" ? "underline" : "none" }}>
+          Remotes
+        </Link>
+      </div>
+      <div style={{ fontSize: "0.8em", color: "#666" }}>
+        Current route: <code>{location.pathname}</code>
+      </div>
+    </nav>
+  );
+}
+
+// Home page component
+function HomePage() {
+  return (
+    <div style={{ padding: "2em", textAlign: "center" }}>
+      <h2>Welcome to Module Federation Enhanced</h2>
+      <p>This is the home page demonstrating React Router navigation.</p>
+      <p>Navigate to different sections using the links above.</p>
+    </div>
+  );
+}
+
+// Demos page component
+function DemosPage() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const threeRef = useRef(null);
@@ -44,14 +88,7 @@ function App() {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  const setApp2 = () => {
-    setActiveComponent("app2");
-  };
-
-  const setApp3 = () => {
-    setActiveComponent("app3");
-  };
-
+  // Chart.js setup
   useEffect(() => {
     if (chartRef.current) {
       // Destroy existing chart if it exists
@@ -75,6 +112,7 @@ function App() {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: true
@@ -91,16 +129,20 @@ function App() {
     };
   }, []);
 
-  // Three.js scene setup
+  // Three.js setup
   useEffect(() => {
     if (threeRef.current) {
-      // Create scene, camera, renderer
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, 400 / 200, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ canvas: threeRef.current });
-      renderer.setSize(400, 200);
+      // Clear any existing content
+      threeRef.current.innerHTML = '';
 
-      // Create a rotating cube
+      // Create scene, camera, and renderer
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 200 / 150, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(200, 150);
+      threeRef.current.appendChild(renderer.domElement);
+
+      // Create a green cube
       const geometry = new THREE.BoxGeometry();
       const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
       const cube = new THREE.Mesh(geometry, material);
@@ -109,12 +151,12 @@ function App() {
       camera.position.z = 5;
 
       // Animation loop
-      const animate = () => {
+      function animate() {
         requestAnimationFrame(animate);
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         renderer.render(scene, camera);
-      };
+      }
       animate();
 
       threeScene.current = { scene, camera, renderer, cube };
@@ -127,27 +169,9 @@ function App() {
     };
   }, []);
 
-  console.log("Chart.js version:", Chart.version);
-  console.log("Three.js version:", THREE.REVISION);
-  console.log("TanStack Query data:", appStats);
-
-
-
   return (
-    <div
-      style={{
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-      }}
-    >
-      <h1>Dynamic System Host - MF-Webpack</h1>
-      <h2>Using build plugin</h2>
-      <p>
-        The Dynamic System will take advantage of Module Federation{" "}
-        <strong>remotes</strong> and <strong>exposes</strong>. It will not load
-        components that have already been loaded.
-      </p>
-
+    <div>
+      <h2>Shared Library Demos</h2>
       <div style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -181,17 +205,67 @@ function App() {
           {/* Empty cell for 2x2 grid */}
         </div>
       </div>
+    </div>
+  );
+}
 
-      <button onClick={setApp2}>Load App 2 Widget</button>
-      <button onClick={setApp3}>Load App 3 Widget</button>
+// Remotes page component
+function RemotesPage() {
+  const [activeComponent, setActiveComponent] = useState(null);
+
+  const setApp2 = () => {
+    setActiveComponent("app2");
+  };
+
+  const setApp3 = () => {
+    setActiveComponent("app3");
+  };
+
+  return (
+    <div>
+      <h2>Remote Applications</h2>
+      <p>Load and test remote Module Federation applications:</p>
+
+      <div style={{ marginBottom: "1em" }}>
+        <button onClick={setApp2} style={{ marginRight: "1em" }}>
+          Load App 2 Widget
+        </button>
+        <button onClick={setApp3}>
+          Load App 3 Widget
+        </button>
+      </div>
 
       <div style={{ marginTop: "2em" }}>
-        <Suspense fallback="Loading System">
+        <Suspense fallback="Loading Remote Application...">
           {activeComponent === "app2" && <App2Widget />}
           {activeComponent === "app3" && <App3Widget />}
         </Suspense>
       </div>
     </div>
+  );
+}
+
+// Main App component with routing
+function App() {
+  return (
+    <Router>
+      <div
+        style={{
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+        }}
+      >
+        <h1>Dynamic System Host - MF-Webpack</h1>
+
+        <Navigation />
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/demos" element={<DemosPage />} />
+          <Route path="/remotes" element={<RemotesPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

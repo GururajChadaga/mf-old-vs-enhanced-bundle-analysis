@@ -3,10 +3,12 @@ import moment from "moment";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
 import * as THREE from "three";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 Chart.register(...registerables);
 
+// Create a client for standalone usage
+const queryClient = new QueryClient();
 
 // Mock API for chart data
 const fetchChartData = async () => {
@@ -20,7 +22,8 @@ const fetchChartData = async () => {
   };
 };
 
-export default function Widget() {
+// Simple Widget component without routing
+function Widget() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const threeRef = useRef(null);
@@ -33,12 +36,6 @@ export default function Widget() {
     refetchInterval: 20000,
   });
 
-  console.log("app2 widget sharescope", __webpack_share_scopes__);
-  console.log("app2 lodash version:", _.VERSION);
-  console.log("app2 Chart.js version:", Chart.version);
-  console.log("app2 Three.js version:", THREE.REVISION);
-  console.log("app2 TanStack Query data:", chartData);
-
   // Using lodash functions in the widget
   const sampleData = [10, 20, 30, 40, 50];
   const shuffledData = _.shuffle([...sampleData]);
@@ -46,6 +43,7 @@ export default function Widget() {
   const minValue = _.min(sampleData);
   const average = _.mean(sampleData);
 
+  // Chart.js setup
   useEffect(() => {
     if (chartRef.current) {
       // Destroy existing chart if it exists
@@ -53,27 +51,23 @@ export default function Widget() {
         chartInstance.current.destroy();
       }
 
-      // Create a line chart showing the sample data
+      // Create a line chart for app2
       chartInstance.current = new Chart(chartRef.current, {
         type: 'line',
         data: {
-          labels: ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'],
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
           datasets: [{
-            label: 'Sample Data',
-            data: sampleData,
+            label: 'App2 Line Chart',
+            data: shuffledData,
             borderColor: 'rgba(255, 99, 132, 1)',
             backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            tension: 0.1
-          }, {
-            label: 'Shuffled Data',
-            data: shuffledData,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            tension: 0.1
+            borderWidth: 2,
+            fill: true
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: true
@@ -88,7 +82,7 @@ export default function Widget() {
         chartInstance.current.destroy();
       }
     };
-  }, [sampleData, shuffledData]);
+  }, [shuffledData]);
 
   // Three.js scene setup
   useEffect(() => {
@@ -136,56 +130,61 @@ export default function Widget() {
     >
       <h2>App 2 Widget - MF-Webpack</h2>
       <p>
-        Moment shouldn't download twice, the host has no moment.js <br />{" "}
-        {moment().format("MMMM Do YYYY, h:mm:ss a")}
+        This is a remote component from App 2. It uses shared libraries for demos.{" "}
+        <br />
+        Current time: {moment().format("MMMM Do YYYY, h:mm:ss a")}
       </p>
+      
       <div style={{ marginTop: "1em", fontSize: "0.9em" }}>
-        <p>
-          <strong>Lodash Demo in Widget:</strong>
-        </p>
+        <p><strong>Lodash Demo:</strong></p>
         <p>Original: [{sampleData.join(", ")}]</p>
         <p>Shuffled: [{shuffledData.join(", ")}]</p>
-        <p>
-          Max: {maxValue}, Min: {minValue}, Avg: {average}
-        </p>
+        <p>Max: {maxValue}, Min: {minValue}, Avg: {average}</p>
+      </div>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "1em",
-          marginTop: "1em"
-        }}>
-          <div>
-            <p><strong>Chart.js Demo:</strong></p>
-            <canvas ref={chartRef} style={{ maxWidth: "100%", maxHeight: "120px" }}></canvas>
-          </div>
-
-          <div>
-            <p><strong>Three.js Demo:</strong></p>
-            <canvas ref={threeRef} style={{ border: "1px solid white", maxWidth: "100%" }}></canvas>
-          </div>
-
-          <div>
-            <p><strong>TanStack Query Demo:</strong></p>
-            {isChartLoading ? (
-              <p style={{ fontSize: "0.8em" }}>Loading chart data...</p>
-            ) : chartData ? (
-              <div style={{ fontSize: "0.8em" }}>
-                <p>Datasets: {chartData.datasets.length}</p>
-                <p>Last fetch: {new Date(chartData.lastFetch).toLocaleTimeString()}</p>
-              </div>
-            ) : (
-              <p style={{ fontSize: "0.8em" }}>No data</p>
-            )}
-          </div>
-
-          <div>
-            {/* Empty cell for 2x2 grid */}
-          </div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "1em",
+        marginTop: "1em"
+      }}>
+        <div>
+          <p><strong>Chart.js Demo:</strong></p>
+          <canvas ref={chartRef} style={{ maxWidth: "100%", maxHeight: "120px" }}></canvas>
         </div>
 
+        <div>
+          <p><strong>Three.js Demo:</strong></p>
+          <canvas ref={threeRef} style={{ border: "1px solid white", maxWidth: "100%" }}></canvas>
+        </div>
 
+        <div>
+          <p><strong>TanStack Query Demo:</strong></p>
+          {isChartLoading ? (
+            <p style={{ fontSize: "0.8em" }}>Loading chart data...</p>
+          ) : chartData ? (
+            <div style={{ fontSize: "0.8em" }}>
+              <p>Datasets: {chartData.datasets.length}</p>
+              <p>Last fetch: {new Date(chartData.lastFetch).toLocaleTimeString()}</p>
+            </div>
+          ) : (
+            <p style={{ fontSize: "0.8em" }}>No data</p>
+          )}
+        </div>
+
+        <div>
+          {/* Empty cell for 2x2 grid */}
+        </div>
       </div>
     </div>
+  );
+}
+
+// Wrap Widget with QueryClientProvider for standalone usage
+export default function WidgetWithQuery() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Widget />
+    </QueryClientProvider>
   );
 }

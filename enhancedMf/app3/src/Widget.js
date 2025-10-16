@@ -3,9 +3,12 @@ import moment from "moment";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
 import * as THREE from "three";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 Chart.register(...registerables);
+
+// Create a client for standalone usage
+const queryClient = new QueryClient();
 
 
 // Mock API for widget data
@@ -22,7 +25,8 @@ const fetchWidgetData = async () => {
   };
 };
 
-export default function Widget() {
+// Simple Widget component without routing
+function Widget() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const threeRef = useRef(null);
@@ -147,19 +151,19 @@ export default function Widget() {
     >
       <h2>App 3 Widget - MF-Enhanced</h2>
       <p>
-        Using <strong>momentjs</strong> for format the date
+        This is a remote component from App 3. It uses shared libraries for demos.{" "}
+        <br />
+        Current time: {moment().format("MMMM Do YYYY, h:mm:ss a")}
       </p>
-      <p>{moment().format("MMMM Do YYYY, h:mm:ss a")}</p>
 
       <div style={{ marginTop: "1em", fontSize: "0.9em" }}>
-        <p>
-          <strong>Lodash Demo in App3 Widget:</strong>
-        </p>
+        <p><strong>Lodash Demo:</strong></p>
         <p>Fruits: {fruits.join(", ")}</p>
         <p>Capitalized: {capitalizedFruits.join(", ")}</p>
         <p>Random fruit: {randomFruit}</p>
         <p>Unique lengths: {uniqueLengths.sort().join(", ")}</p>
         <p>Grouped by length: {JSON.stringify(groupedByLength)}</p>
+      </div>
 
         <div style={{
           display: "grid",
@@ -197,9 +201,15 @@ export default function Widget() {
             {/* Empty cell for 2x2 grid */}
           </div>
         </div>
-
-
-      </div>
     </div>
+  );
+}
+
+// Wrap Widget with QueryClientProvider for standalone usage
+export default function WidgetWithQuery() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Widget />
+    </QueryClientProvider>
   );
 }
