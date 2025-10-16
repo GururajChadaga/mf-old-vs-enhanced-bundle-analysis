@@ -66,6 +66,9 @@ module.exports = {
         "three": {
           singleton: true,
         },
+        "@tanstack/react-query": {
+          singleton: true,
+        },
       },
     }),
     new HtmlWebpackPlugin({

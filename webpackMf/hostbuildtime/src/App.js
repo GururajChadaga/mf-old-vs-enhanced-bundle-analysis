@@ -2,8 +2,12 @@ import React, { useState, Suspense, useEffect, useRef } from "react";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
 import * as THREE from "three";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 Chart.register(...registerables);
+
+// Create a client
+const queryClient = new QueryClient();
 
 console.log(
   "hostbuildtime sharescope",
@@ -15,12 +19,30 @@ console.log("hostbuildtime lodash version:", _.VERSION);
 const App2Widget = React.lazy(() => import("app2/Widget"));
 const App3Widget = React.lazy(() => import("app3/Widget"));
 
+// Mock API function
+const fetchAppStats = async () => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    totalUsers: _.random(1000, 5000),
+    activeApps: 3,
+    lastUpdated: new Date().toISOString(),
+  };
+};
+
 function App() {
   const [activeComponent, setActiveComponent] = useState(null);
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const threeRef = useRef(null);
   const threeScene = useRef(null);
+
+  // TanStack Query usage
+  const { data: appStats, isLoading, error } = useQuery({
+    queryKey: ['appStats'],
+    queryFn: fetchAppStats,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   const setApp2 = () => {
     setActiveComponent("app2");
@@ -107,6 +129,7 @@ function App() {
 
   console.log("Chart.js version:", Chart.version);
   console.log("Three.js version:", THREE.REVISION);
+  console.log("TanStack Query data:", appStats);
 
 
 
@@ -125,14 +148,38 @@ function App() {
         components that have already been loaded.
       </p>
 
-      <div style={{ marginBottom: "2em" }}>
-        <h3>Chart.js Demo (Shared Library)</h3>
-        <canvas ref={chartRef} style={{ maxWidth: "400px", maxHeight: "200px" }}></canvas>
-      </div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "2em",
+        marginBottom: "2em"
+      }}>
+        <div>
+          <h3>Chart.js Demo (Shared Library)</h3>
+          <canvas ref={chartRef} style={{ maxWidth: "100%", maxHeight: "200px" }}></canvas>
+        </div>
 
-      <div style={{ marginBottom: "2em" }}>
-        <h3>Three.js Demo (Shared Library)</h3>
-        <canvas ref={threeRef} style={{ border: "1px solid #ccc" }}></canvas>
+        <div>
+          <h3>Three.js Demo (Shared Library)</h3>
+          <canvas ref={threeRef} style={{ border: "1px solid #ccc", maxWidth: "100%" }}></canvas>
+        </div>
+
+        <div>
+          <h3>TanStack Query Demo (Shared Library)</h3>
+          {isLoading && <p>Loading app stats...</p>}
+          {error && <p style={{ color: 'red' }}>Error: {error.message}</p>}
+          {appStats && (
+            <div style={{ padding: "1em", backgroundColor: "#f5f5f5", borderRadius: "4px" }}>
+              <p><strong>Total Users:</strong> {appStats.totalUsers.toLocaleString()}</p>
+              <p><strong>Active Apps:</strong> {appStats.activeApps}</p>
+              <p><strong>Last Updated:</strong> {new Date(appStats.lastUpdated).toLocaleTimeString()}</p>
+            </div>
+          )}
+        </div>
+
+        <div>
+          {/* Empty cell for 2x2 grid */}
+        </div>
       </div>
 
       <button onClick={setApp2}>Load App 2 Widget</button>
@@ -148,4 +195,13 @@ function App() {
   );
 }
 
-export default App;
+// Wrap App with QueryClientProvider
+function AppWithQuery() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  );
+}
+
+export default AppWithQuery;

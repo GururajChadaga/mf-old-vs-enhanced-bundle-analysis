@@ -24,6 +24,7 @@
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.3",
     "chart.js": "^4.5.1",
     "core-js": "3.16.0",
     "three": "^0.180.0"

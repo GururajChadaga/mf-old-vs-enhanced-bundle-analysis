@@ -3,9 +3,22 @@ import moment from "moment";
 import _ from "lodash";
 import { Chart, registerables } from "chart.js";
 import * as THREE from "three";
+import { useQuery } from "@tanstack/react-query";
 
 Chart.register(...registerables);
 
+
+// Mock API for chart data
+const fetchChartData = async () => {
+  await new Promise(resolve => setTimeout(resolve, 800));
+  return {
+    datasets: _.range(5).map(i => ({
+      label: `Dataset ${i + 1}`,
+      value: _.random(10, 100)
+    })),
+    lastFetch: new Date().toISOString(),
+  };
+};
 
 export default function Widget() {
   const chartRef = useRef(null);
@@ -13,10 +26,18 @@ export default function Widget() {
   const threeRef = useRef(null);
   const threeScene = useRef(null);
 
+  // TanStack Query for chart data
+  const { data: chartData, isLoading: isChartLoading } = useQuery({
+    queryKey: ['chartData', 'app2'],
+    queryFn: fetchChartData,
+    refetchInterval: 20000,
+  });
+
   console.log("app2 widget sharescope", __webpack_share_scopes__);
   console.log("app2 lodash version:", _.VERSION);
   console.log("app2 Chart.js version:", Chart.version);
   console.log("app2 Three.js version:", THREE.REVISION);
+  console.log("app2 TanStack Query data:", chartData);
 
   // Using lodash functions in the widget
   const sampleData = [10, 20, 30, 40, 50];
@@ -128,13 +149,39 @@ export default function Widget() {
           Max: {maxValue}, Min: {minValue}, Avg: {average}
         </p>
 
-        <div style={{ marginTop: "1em" }}>
-          <p><strong>Chart.js Demo:</strong></p>
-          <canvas ref={chartRef} style={{ maxWidth: "300px", maxHeight: "150px" }}></canvas>
-        </div>
-        <div style={{ marginTop: "1em" }}>
-          <p><strong>Three.js Demo:</strong></p>
-          <canvas ref={threeRef} style={{ border: "1px solid white" }}></canvas>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1em",
+          marginTop: "1em"
+        }}>
+          <div>
+            <p><strong>Chart.js Demo:</strong></p>
+            <canvas ref={chartRef} style={{ maxWidth: "100%", maxHeight: "120px" }}></canvas>
+          </div>
+
+          <div>
+            <p><strong>Three.js Demo:</strong></p>
+            <canvas ref={threeRef} style={{ border: "1px solid white", maxWidth: "100%" }}></canvas>
+          </div>
+
+          <div>
+            <p><strong>TanStack Query Demo:</strong></p>
+            {isChartLoading ? (
+              <p style={{ fontSize: "0.8em" }}>Loading chart data...</p>
+            ) : chartData ? (
+              <div style={{ fontSize: "0.8em" }}>
+                <p>Datasets: {chartData.datasets.length}</p>
+                <p>Last fetch: {new Date(chartData.lastFetch).toLocaleTimeString()}</p>
+              </div>
+            ) : (
+              <p style={{ fontSize: "0.8em" }}>No data</p>
+            )}
+          </div>
+
+          <div>
+            {/* Empty cell for 2x2 grid */}
+          </div>
         </div>
 
 
